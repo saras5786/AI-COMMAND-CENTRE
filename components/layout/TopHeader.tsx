@@ -51,7 +51,7 @@ export function TopHeader({ onRunDemoIncident, pendingAlertsCount = 1 }: TopHead
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-sm font-bold text-white tracking-wide">
-                EMERGENCY OPERATIONS COMMAND
+                AI COMMAND CENTRE
               </h1>
               <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center space-x-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>

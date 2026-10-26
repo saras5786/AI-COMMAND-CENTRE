@@ -1,7 +1,6 @@
-# 🚨 AI EMERGENCY COMMAND CENTER (Llama 3.1 Neural Core)
+# 🚨 AI COMMAND CENTRE
 
-> **"Seconds Matter. Information Should Move Faster."**  
-> A Next-Generation Multi-Agency Emergency AI Command & Tactical Dispatch System built with Next.js 14, React 18, TypeScript, Tailwind CSS, and a modular Multi-LLM provider architecture.
+> A Next-Generation Multi-Agency Emergency AI Command & Tactical Dispatch System built with Next.js 14, React 18, TypeScript, Tailwind CSS, Leaflet Maps, and a modular Multi-LLM provider architecture.
 
 🌐 **Live Website (GitHub Pages)**: [https://saras5786.github.io/AI-COMMAND-CENTRE/](https://saras5786.github.io/AI-COMMAND-CENTRE/)  
 📁 **GitHub Repository**: [https://github.com/saras5786/AI-COMMAND-CENTRE](https://github.com/saras5786/AI-COMMAND-CENTRE)
@@ -10,7 +9,7 @@
 
 ## 🌟 Executive Overview & Purpose
 
-The **AI Emergency Command Center** transforms chaotic, panicked 911 caller information (unstructured speech waveforms, citizen smartphone photos, broken conversational notes, GPS coordinates) into structured, prioritized Incident Command System (ICS) operational actions in sub-second latency (< 0.3s).
+**AI COMMAND CENTRE** transforms chaotic, panicked 911 caller information (unstructured speech waveforms, citizen smartphone photos, broken conversational notes, GPS coordinates) into structured, prioritized Incident Command System (ICS) operational actions in sub-second latency (< 0.3s).
 
 It breaks traditional dispatch bottlenecks by enabling **simultaneous multi-agency dispatch** across EMS Paramedics, Police Cruisers, Fire & Rescue Apparatus, and Receiving Hospital ER Trauma Centers.
 

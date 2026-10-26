@@ -38,7 +38,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <div className="font-bold text-sm text-white flex items-center gap-2">
-              <span>Multi-Agency Incident Command Center</span>
+              <span>AI COMMAND CENTRE</span>
               <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
                 SYSTEM ONLINE
               </span>

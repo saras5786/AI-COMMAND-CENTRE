@@ -18,8 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <title>AI Emergency Command Center - Llama 3.1 Neural Core</title>
-        <meta name="description" content="Next-Generation Multi-Agency Emergency AI Command and Tactical Dispatch System" />
+        <title>AI COMMAND CENTRE</title>
+        <meta name="description" content="AI COMMAND CENTRE - Multi-Agency Emergency Dispatch & Spatial Triage System" />
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="bg-[#050914] text-slate-200 min-h-screen flex antialiased">

@@ -99,7 +99,7 @@ export function Sidebar({ incidentsCount = 6, unitsCount = 13 }: SidebarProps) {
           </div>
           <div>
             <div className="font-bold text-sm tracking-wide text-white">
-              AI CAD SYSTEM
+              AI COMMAND CENTRE
             </div>
             <div className="text-[11px] text-slate-400">
               Multi-Agency Dispatch

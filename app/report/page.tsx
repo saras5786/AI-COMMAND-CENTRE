@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useCommandCenterStore } from "@/lib/store";
 import { soundFX } from "@/lib/sound";
+import { executeTriageReport } from "@/lib/llm";
 
 export default function ReportEmergencyPage() {
   const router = useRouter();
@@ -107,18 +108,13 @@ export default function ReportEmergencyPage() {
     soundFX.dispatchChime();
 
     try {
-      const res = await fetch("/api/triage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: textReport,
-          transcript: voiceTranscript,
-          location: address,
-          imageBase64: imageFile ? imageFile.split(",")[1] : null,
-        }),
+      const data = await executeTriageReport({
+        text: textReport,
+        transcript: voiceTranscript,
+        location: address,
+        imageBase64: imageFile ? imageFile.split(",")[1] : null,
       });
 
-      const data = await res.json();
       if (data.success && data.incident) {
         addIncident(data.incident);
         setTriageSuccessResult(data);

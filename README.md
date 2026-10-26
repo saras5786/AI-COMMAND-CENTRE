@@ -3,6 +3,9 @@
 > **"Seconds Matter. Information Should Move Faster."**  
 > A Next-Generation Multi-Agency Emergency AI Command & Tactical Dispatch System built with Next.js 14, React 18, TypeScript, Tailwind CSS, and a modular Multi-LLM provider architecture.
 
+🌐 **Live Website (GitHub Pages)**: [https://saras5786.github.io/AI-COMMAND-CENTRE/](https://saras5786.github.io/AI-COMMAND-CENTRE/)  
+📁 **GitHub Repository**: [https://github.com/saras5786/AI-COMMAND-CENTRE](https://github.com/saras5786/AI-COMMAND-CENTRE)
+
 ---
 
 ## 🌟 Executive Overview & Purpose

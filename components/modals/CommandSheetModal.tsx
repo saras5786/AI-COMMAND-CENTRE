@@ -130,36 +130,32 @@ export function CommandSheetModal({
 
               {/* AI Neural Analysis Card */}
               {incident.aiAnalysis && (
-                <div className="p-4 rounded-lg bg-gradient-to-br from-[#0c1936] to-[#071024] border border-cyan-500/30 shadow-cyan-glow">
-                  <div className="flex items-center justify-between mb-3 border-b border-cyan-500/20 pb-2">
-                    <div className="flex items-center space-x-2 text-cyan-400 font-bold">
-                      <Radio className="w-4 h-4 animate-pulse" />
+                <div className="p-4 rounded-xl bg-slate-900 border border-slate-700/80 shadow-md">
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2.5">
+                    <div className="flex items-center space-x-2 text-blue-400 font-semibold text-xs">
+                      <Radio className="w-4 h-4 text-blue-400" />
                       <span>{incident.aiAnalysis.modelUsed}</span>
                     </div>
                     <div className="flex items-center space-x-3 text-[11px] font-mono">
                       <span className="text-slate-400">
-                        Inference:{" "}
-                        <strong className="text-cyan-300">{incident.aiAnalysis.inferenceLatency}</strong>
+                        Inference: <strong className="text-blue-300">{incident.aiAnalysis.inferenceLatency}</strong>
                       </span>
                       <span className="text-slate-400">
-                        Confidence:{" "}
-                        <strong className="text-emerald-400">
-                          {Math.round(incident.aiAnalysis.confidenceScore * 100)}%
-                        </strong>
+                        Confidence: <strong className="text-emerald-400">{Math.round(incident.aiAnalysis.confidenceScore * 100)}%</strong>
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <div className="text-[10px] uppercase text-cyan-300 font-bold tracking-wider mb-1">
-                        Detected Hazard Vectors:
+                      <div className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1.5">
+                        Identified Hazards & Risks:
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {incident.aiAnalysis.hazards.map((h, i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[11px]"
+                            className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] font-medium"
                           >
                             ⚠ {h}
                           </span>
@@ -168,19 +164,19 @@ export function CommandSheetModal({
                     </div>
 
                     <div>
-                      <div className="text-[10px] uppercase text-cyan-300 font-bold tracking-wider mb-1">
+                      <div className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">
                         Medical & Triage Assessment:
                       </div>
-                      <div className="p-2.5 rounded bg-[#070e20] border border-[#142342] text-slate-300 font-mono text-[11px]">
+                      <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-slate-300 font-mono text-[11px] leading-relaxed">
                         {incident.aiAnalysis.medicalSummary}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-[10px] uppercase text-cyan-300 font-bold tracking-wider mb-1">
-                        ICS Tactical Directive:
+                      <div className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">
+                        Operational Directive (Incident Commander):
                       </div>
-                      <div className="p-2.5 rounded bg-[#070e20] border border-[#142342] text-cyan-200 font-mono text-[11px]">
+                      <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-blue-200 font-mono text-[11px] leading-relaxed">
                         {incident.aiAnalysis.icsRecommendedAction}
                       </div>
                     </div>

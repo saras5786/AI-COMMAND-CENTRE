@@ -1,16 +1,20 @@
 import { TriageResult, TriageResultSchema } from "../types";
 
 export class GroqLlamaAdapter {
-  private apiKey: string;
-  private model: string;
+  private getApiKey(): string {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("groq_api_key") || process.env.NEXT_PUBLIC_GROQ_API_KEY || "";
+    }
+    return process.env.GROQ_API_KEY || "";
+  }
 
-  constructor() {
-    this.apiKey = process.env.GROQ_API_KEY || "";
-    this.model = process.env.GROQ_MODEL || "llama-3.1-70b-versatile";
+  private getModel(): string {
+    return process.env.GROQ_MODEL || "llama-3.1-70b-versatile";
   }
 
   isAvailable(): boolean {
-    return Boolean(this.apiKey && this.apiKey.length > 5);
+    const key = this.getApiKey();
+    return Boolean(key && key.length > 5);
   }
 
   async triageEmergency(input: {
@@ -45,14 +49,17 @@ Reported Location: ${input.location || "N/A"}
 
 Respond ONLY with raw JSON.`;
 
+    const apiKey = this.getApiKey();
+    const model = this.getModel();
+
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: this.model,
+        model: model,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
         temperature: 0.1,

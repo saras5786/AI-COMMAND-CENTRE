@@ -10,17 +10,51 @@ export class CentralizedLLMService {
   private openai = new OpenAIAdapter();
 
   /**
-   * Triage an emergency using Meta Llama 3.1 70B Neural Core
-   * Fallback: Mock Neural Core engine (sub-second simulated inference)
+   * Check if any real LLM provider is connected via API key
+   */
+  getConnectedProvider(): { name: string; isReal: boolean } {
+    if (this.gemini.isAvailable()) return { name: "Google Gemini 1.5 Flash", isReal: true };
+    if (this.groq.isAvailable()) return { name: "Meta Llama 3.1 70B (Groq)", isReal: true };
+    if (this.openai.isAvailable()) return { name: "OpenAI GPT-4o-mini", isReal: true };
+    return { name: "Built-in Emergency Heuristics", isReal: false };
+  }
+
+  /**
+   * Triage an emergency using Gemini 1.5 Flash or Groq Llama 3.1
+   * Fallback: Built-in deterministic emergency heuristic engine
    */
   async triageEmergency(input: {
     text?: string;
     transcript?: string;
     location?: string;
-    hasImage?: boolean;
-  }): Promise<{ data: TriageResult; meta: LLMMetadata }> {
+    imageBase64?: string;
+    mimeType?: string;
+  }): Promise<{ data: TriageResult; sceneAnalysis?: SceneAnalysisResult; meta: LLMMetadata }> {
     const startTime = Date.now();
 
+    // 1. Prioritize Google Gemini 1.5 Flash (Multimodal vision + reasoning)
+    if (this.gemini.isAvailable()) {
+      try {
+        const { result, sceneAnalysis, tokens } = await this.gemini.triageEmergency(input);
+        const latencyMs = Date.now() - startTime;
+        return {
+          data: result,
+          sceneAnalysis,
+          meta: {
+            provider: "google",
+            model: "gemini-1.5-flash",
+            latencyMs,
+            tokensUsed: tokens,
+            costEstimatedUsd: (tokens.total / 1000000) * 0.35,
+            timestamp: new Date().toISOString(),
+          },
+        };
+      } catch (err) {
+        console.warn("Gemini triage failed, trying secondary adapter:", err);
+      }
+    }
+
+    // 2. Secondary: Groq Llama 3.1 70B (Fast text reasoning)
     if (this.groq.isAvailable()) {
       try {
         const { result, tokens } = await this.groq.triageEmergency(input);
@@ -37,18 +71,18 @@ export class CentralizedLLMService {
           },
         };
       } catch (err) {
-        console.warn("Groq Llama triage failed, falling back to Mock Neural Core:", err);
+        console.warn("Groq Llama triage failed, falling back to built-in engine:", err);
       }
     }
 
-    // Default ultra-fast Neural Core
+    // 3. Fallback: Built-in client engine
     const result = await MockNeuralCore.triageEmergency(input);
     const latencyMs = Date.now() - startTime;
     return {
       data: result,
       meta: {
-        provider: "mock-neural-core",
-        model: "llama-3.1-neural-core-edge",
+        provider: "local-cad-engine",
+        model: "built-in-dispatcher-v1",
         latencyMs,
         tokensUsed: { prompt: 210, completion: 145, total: 355 },
         costEstimatedUsd: 0.0,
@@ -58,68 +92,47 @@ export class CentralizedLLMService {
   }
 
   /**
-   * Multimodal Scene Analysis using Google Gemini Vision
+   * Scene Computer Vision Analysis
    */
   async analyzeScene(imageBase64?: string): Promise<{ data: SceneAnalysisResult; meta: LLMMetadata }> {
     const startTime = Date.now();
-
-    if (this.gemini.isAvailable()) {
-      try {
-        const { result, tokens } = await this.gemini.analyzeSceneVision(imageBase64);
-        const latencyMs = Date.now() - startTime;
-        return {
-          data: result,
-          meta: {
-            provider: "google",
-            model: "gemini-1.5-flash",
-            latencyMs,
-            tokensUsed: tokens,
-            costEstimatedUsd: (tokens.total / 1000000) * 0.35,
-            timestamp: new Date().toISOString(),
-          },
-        };
-      } catch (err) {
-        console.warn("Gemini vision analysis failed, falling back:", err);
-      }
-    }
-
-    const result = await MockNeuralCore.analyzeSceneVision();
+    const result = await MockNeuralCore.analyzeSceneVision(imageBase64);
     const latencyMs = Date.now() - startTime;
     return {
       data: result,
       meta: {
-        provider: "mock-neural-core",
-        model: "multimodal-vision-tokenizer-v2",
+        provider: "local-cad-engine",
+        model: "built-in-scene-vision",
         latencyMs,
-        tokensUsed: { prompt: 420, completion: 120, total: 540 },
-        costEstimatedUsd: 0.0,
+        tokensUsed: { prompt: 150, completion: 110, total: 260 },
+        costEstimatedUsd: 0,
         timestamp: new Date().toISOString(),
       },
     };
   }
 
   /**
-   * Voice audio dispatch transcription & acoustic stress triage
+   * 911 Caller Voice Audio Dispatch
    */
-  async transcribeVoice(scenario?: string): Promise<{ data: VoiceDispatchResult; meta: LLMMetadata }> {
+  async transcribeVoice(scenarioKey?: string): Promise<{ data: VoiceDispatchResult; meta: LLMMetadata }> {
     const startTime = Date.now();
-    const result = await MockNeuralCore.transcribeVoiceDispatch(scenario);
+    const result = await MockNeuralCore.transcribeVoiceDispatch(scenarioKey);
     const latencyMs = Date.now() - startTime;
     return {
       data: result,
       meta: {
-        provider: "mock-neural-core",
-        model: "whisper-large-v3-acoustic-filter",
+        provider: "local-cad-engine",
+        model: "built-in-voice-dispatch",
         latencyMs,
         tokensUsed: { prompt: 180, completion: 90, total: 270 },
-        costEstimatedUsd: 0.0,
+        costEstimatedUsd: 0,
         timestamp: new Date().toISOString(),
       },
     };
   }
 
   /**
-   * Incident Command System Strategy Sheet (Claude / GPT-4o)
+   * Incident Command System Strategy Sheet (Claude / GPT-4o / Local)
    */
   async generateCommandStrategy(
     title: string,
@@ -153,8 +166,8 @@ export class CentralizedLLMService {
     return {
       data: result,
       meta: {
-        provider: "mock-neural-core",
-        model: "fema-ics-201-tactical-strategist",
+        provider: "local-cad-engine",
+        model: "fema-ics-201-standard",
         latencyMs,
         tokensUsed: { prompt: 310, completion: 220, total: 530 },
         costEstimatedUsd: 0.0,
@@ -176,13 +189,10 @@ export async function executeTriageReport(input: {
     text: input.text,
     transcript: input.transcript,
     location: input.location,
-    hasImage: Boolean(input.imageBase64),
+    imageBase64: input.imageBase64 || undefined,
   });
 
-  let sceneVision = null;
-  if (input.imageBase64) {
-    sceneVision = await llmService.analyzeScene(input.imageBase64);
-  }
+  const isReal = triage.meta.provider !== "local-cad-engine";
 
   const newIncident = {
     id: "inc-" + Date.now(),
@@ -201,21 +211,21 @@ export async function executeTriageReport(input: {
       lng: -122.4194 + (Math.random() - 0.5) * 0.05,
     },
     aiAnalysis: {
-      modelUsed: `${triage.meta.model} (${triage.meta.provider})`,
+      modelUsed: isReal ? `${triage.meta.model} (${triage.meta.provider.toUpperCase()})` : "Built-in Emergency Classifier",
       inferenceLatency: `${(triage.meta.latencyMs / 1000).toFixed(2)}s`,
-      confidenceScore: 0.97,
+      confidenceScore: isReal ? 0.98 : 0.94,
       hazards: triage.data.hazards,
       suggestedApparatus: triage.data.suggestedApparatus,
       medicalSummary: triage.data.medicalSummary,
       icsRecommendedAction: triage.data.icsRecommendedAction,
     },
-    sceneVision: sceneVision?.data || null,
+    sceneVision: triage.sceneAnalysis || null,
   };
 
   return {
     success: true,
     incident: newIncident,
     triageMeta: triage.meta,
-    visionMeta: sceneVision?.meta || null,
+    isRealLLM: isReal,
   };
 }

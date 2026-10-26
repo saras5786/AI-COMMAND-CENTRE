@@ -7,7 +7,7 @@ export type LLMTask =
   | "ics_command_strategy";
 
 export interface LLMMetadata {
-  provider: "groq" | "google" | "openai" | "anthropic" | "mock-neural-core";
+  provider: "groq" | "google" | "openai" | "anthropic" | "mock-neural-core" | "local-cad-engine";
   model: string;
   latencyMs: number;
   tokensUsed: {

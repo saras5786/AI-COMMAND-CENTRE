@@ -1,22 +1,29 @@
 import { TriageResult, TriageResultSchema, CommandSheetStrategy, CommandSheetStrategySchema } from "../types";
 
 export class OpenAIAdapter {
-  private apiKey: string;
-  private model: string;
+  private getApiKey(): string {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("openai_api_key") || process.env.NEXT_PUBLIC_OPENAI_API_KEY || "";
+    }
+    return process.env.OPENAI_API_KEY || "";
+  }
 
-  constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY || "";
-    this.model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  private getModel(): string {
+    return process.env.OPENAI_MODEL || "gpt-4o-mini";
   }
 
   isAvailable(): boolean {
-    return Boolean(this.apiKey && this.apiKey.length > 5);
+    const key = this.getApiKey();
+    return Boolean(key && key.length > 5);
   }
 
   async generateCommandStrategy(title: string, location: string, description: string): Promise<{
     result: CommandSheetStrategy;
     tokens: { prompt: number; completion: number; total: number };
   }> {
+    const apiKey = this.getApiKey();
+    const model = this.getModel();
+
     const prompt = `You are a Senior FEMA Incident Commander and ICS-201/204 Tactical Lead for 911 dispatch.
 Provide an operational command strategy for Incident: "${title}" at "${location}".
 Description: ${description}
@@ -37,10 +44,10 @@ Return a valid JSON object matching:
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: this.model,
+        model: model,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
         temperature: 0.2,

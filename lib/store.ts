@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { Incident, ResponderUnit, Hospital, INITIAL_INCIDENTS, INITIAL_UNITS, INITIAL_HOSPITALS } from "./initial-data";
 import { SectorLocation, DEFAULT_SECTOR, generateLocalSectorData } from "./location-simulator";
 
-const STORAGE_KEY_INCIDENTS = "cad_emergency_incidents_v2";
-const STORAGE_KEY_UNITS = "cad_emergency_units_v2";
-const STORAGE_KEY_HOSPITALS = "cad_emergency_hospitals_v2";
-const STORAGE_KEY_SECTOR = "cad_emergency_sector_v2";
+const STORAGE_KEY_INCIDENTS = "cad_emergency_incidents_v3";
+const STORAGE_KEY_UNITS = "cad_emergency_units_v3";
+const STORAGE_KEY_HOSPITALS = "cad_emergency_hospitals_v3";
+const STORAGE_KEY_SECTOR = "cad_emergency_sector_v3";
 
 export function useCommandCenterStore() {
   const [incidents, setIncidents] = useState<Incident[]>(INITIAL_INCIDENTS);

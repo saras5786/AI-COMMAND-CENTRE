@@ -8,9 +8,9 @@ export interface SectorLocation {
 }
 
 export const DEFAULT_SECTOR: SectorLocation = {
-  lat: 37.7749,
-  lng: -122.4194,
-  city: "San Francisco Metro Sector",
+  lat: 28.6139,
+  lng: 77.2090,
+  city: "New Delhi NCR Sector, India",
   isUserLocated: false,
 };
 

@@ -33,7 +33,7 @@ export function RealOperationsMap({
   const [activeFilter, setActiveFilter] = useState<"ALL" | "INCIDENTS" | "POLICE" | "FIRE" | "EMS" | "HOSPITALS">("ALL");
   const [selectedItem, setSelectedItem] = useState<{ type: string; data: any } | null>(null);
 
-  const targetCenter: [number, number] = center || (userSector ? [userSector.lat, userSector.lng] : [37.78, -122.38]);
+  const targetCenter: [number, number] = center || (userSector ? [userSector.lat, userSector.lng] : [28.6139, 77.2090]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !mapContainerRef.current) return;

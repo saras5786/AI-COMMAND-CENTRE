@@ -10,8 +10,8 @@ interface LocationPickerProps {
 }
 
 export function LocationPickerMap({
-  initialLat = 37.7749,
-  initialLng = -122.4194,
+  initialLat = 28.6139,
+  initialLng = 77.2090,
   onLocationSelect,
 }: LocationPickerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);

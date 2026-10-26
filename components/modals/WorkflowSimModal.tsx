@@ -22,7 +22,7 @@ export function WorkflowSimModal({
   const steps = [
     {
       title: "01. Panicked Multimodal Ingestion",
-      sub: "Voice audio stream, mobile photo & GPS coordinates ingested from citizen 911 call.",
+      sub: "Voice audio stream, mobile photo & GPS coordinates ingested from citizen 112 emergency call.",
       icon: Radio,
       badge: "INGESTION: 0.12s",
       color: "text-amber-400",

@@ -133,42 +133,61 @@ export function LocationPromptModal({
         <div className="relative flex items-center justify-center">
           <div className="border-t border-slate-800 w-full" />
           <span className="bg-[#0f172a] px-3 text-[11px] text-slate-500 uppercase font-semibold">
-            Or Choose A City
+            Or Choose Indian Metro Sector
           </span>
         </div>
 
         {/* Preset Cities */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <button
-            onClick={() => handleSelectPreset(37.7749, -122.4194, "San Francisco, CA")}
-            className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition"
+            onClick={() => handleSelectPreset(28.6139, 77.2090, "New Delhi NCR, India")}
+            className="p-2.5 rounded-xl bg-blue-950/40 hover:bg-blue-900/50 border border-blue-500/40 text-left transition group"
           >
-            <div className="font-semibold text-white">San Francisco</div>
-            <div className="text-[10px] text-slate-400">California, USA</div>
+            <div className="font-semibold text-white flex items-center justify-between">
+              <span>New Delhi NCR</span>
+              <span className="text-[9px] bg-blue-500/30 text-blue-300 px-1.5 py-0.5 rounded font-mono">DEFAULT</span>
+            </div>
+            <div className="text-[10px] text-slate-400">National Capital Region, India</div>
           </button>
 
           <button
-            onClick={() => handleSelectPreset(40.7128, -74.006, "New York City, NY")}
+            onClick={() => handleSelectPreset(12.9716, 77.5946, "Bengaluru, Karnataka")}
             className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition"
           >
-            <div className="font-semibold text-white">New York City</div>
-            <div className="text-[10px] text-slate-400">New York, USA</div>
+            <div className="font-semibold text-white">Bengaluru</div>
+            <div className="text-[10px] text-slate-400">Karnataka, India</div>
           </button>
 
           <button
-            onClick={() => handleSelectPreset(51.5074, -0.1278, "London, UK")}
+            onClick={() => handleSelectPreset(19.0760, 72.8777, "Mumbai, Maharashtra")}
             className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition"
           >
-            <div className="font-semibold text-white">London</div>
-            <div className="text-[10px] text-slate-400">United Kingdom</div>
+            <div className="font-semibold text-white">Mumbai</div>
+            <div className="text-[10px] text-slate-400">Maharashtra, India</div>
           </button>
 
           <button
-            onClick={() => handleSelectPreset(28.6139, 77.209, "New Delhi, India")}
+            onClick={() => handleSelectPreset(17.3850, 78.4867, "Hyderabad, Telangana")}
             className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition"
           >
-            <div className="font-semibold text-white">New Delhi</div>
-            <div className="text-[10px] text-slate-400">Delhi, India</div>
+            <div className="font-semibold text-white">Hyderabad</div>
+            <div className="text-[10px] text-slate-400">Telangana, India</div>
+          </button>
+
+          <button
+            onClick={() => handleSelectPreset(22.5726, 88.3639, "Kolkata, West Bengal")}
+            className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition"
+          >
+            <div className="font-semibold text-white">Kolkata</div>
+            <div className="text-[10px] text-slate-400">West Bengal, India</div>
+          </button>
+
+          <button
+            onClick={() => handleSelectPreset(13.0827, 80.2707, "Chennai, Tamil Nadu")}
+            className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-left transition"
+          >
+            <div className="font-semibold text-white">Chennai</div>
+            <div className="text-[10px] text-slate-400">Tamil Nadu, India</div>
           </button>
         </div>
       </div>

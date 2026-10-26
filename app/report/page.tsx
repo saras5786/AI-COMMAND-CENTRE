@@ -34,9 +34,9 @@ export default function ReportEmergencyPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [imageFile, setImageFile] = useState<string | null>(null);
   const [imageName, setImageName] = useState<string | null>(null);
-  const [address, setAddress] = useState("East Gate Road & 4th Ave, Sector 7");
-  const [lat, setLat] = useState(37.7749);
-  const [lng, setLng] = useState(-122.4194);
+  const [address, setAddress] = useState("Outer Ring Road near Moti Bagh Flyover, New Delhi");
+  const [lat, setLat] = useState(28.5828);
+  const [lng, setLng] = useState(77.1683);
   const [isTriageSubmitting, setIsTriageSubmitting] = useState(false);
   const [triageSuccessResult, setTriageSuccessResult] = useState<any | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -48,24 +48,24 @@ export default function ReportEmergencyPage() {
     soundFX.blip(750, 0.04);
     if (type === "crash") {
       setTextReport("Two vehicles collided at intersection. Driver in sedan trapped by deformed door, fuel leaking onto asphalt.");
-      setVoiceTranscript("911 Audio: 'Two cars crashed hard, one driver is pinned inside and fuel is leaking!'");
-      setAddress("East Gate Road & 4th Ave");
-      setLat(37.7749);
-      setLng(-122.4194);
+      setVoiceTranscript("112 Emergency Dispatch: 'Two cars crashed hard on Ring Road, one driver is pinned inside and fuel is leaking!'");
+      setAddress("Outer Ring Road near Moti Bagh, New Delhi");
+      setLat(28.5828);
+      setLng(77.1683);
       setImageName("crash_intersection.jpg");
     } else if (type === "fire") {
       setTextReport("Commercial office building electrical fire. Thick black smoke rising from 3rd floor windows, building fire alarms sounding.");
-      setVoiceTranscript("911 Audio: 'Smoke is filling the 3rd floor hallway, alarms going off, building evacuating!'");
-      setAddress("Oakland Commercial Complex, 3rd Fl");
-      setLat(37.8044);
-      setLng(-122.2712);
+      setVoiceTranscript("101 Fire Control: 'Smoke is filling the 3rd floor hallway at Nehru Place, alarms going off, building evacuating!'");
+      setAddress("Nehru Place Commercial Complex, Tower 4, New Delhi");
+      setLat(28.5494);
+      setLng(77.2536);
       setImageName("structure_fire.jpg");
     } else {
       setTextReport("Male in mid-50s collapsed in public atrium, unresponsive. Bystander administering chest compressions with AED deployed.");
-      setVoiceTranscript("911 Audio: 'Person collapsed suddenly, not breathing, CPR in progress!'");
-      setAddress("Metro Central Mall - Food Court");
-      setLat(37.7833);
-      setLng(-122.4067);
+      setVoiceTranscript("108 / 112 Medical Alert: 'Commuter collapsed suddenly at Rajiv Chowk Metro, not breathing, CPR in progress!'");
+      setAddress("Rajiv Chowk Metro Concourse, Gate 3, Connaught Place");
+      setLat(28.6328);
+      setLng(77.2195);
       setImageName("cpr_atrium.jpg");
     }
   };
@@ -198,7 +198,7 @@ export default function ReportEmergencyPage() {
                 <span className="w-5 h-5 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-[11px] font-bold">1</span>
                 <span>Incident Description</span>
               </label>
-              <span className="text-[11px] text-slate-500">Text or 911 Call Notes</span>
+              <span className="text-[11px] text-slate-500">Citizen 112 / Caller Dispatch Notes</span>
             </div>
             <textarea
               rows={4}
@@ -214,7 +214,7 @@ export default function ReportEmergencyPage() {
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-200 flex items-center space-x-1.5">
                 <Mic className="w-4 h-4 text-rose-400" />
-                <span>911 Voice Audio / Transcript</span>
+                <span>Emergency 112 Voice Audio / Transcript</span>
               </label>
               <button
                 type="button"
@@ -222,7 +222,7 @@ export default function ReportEmergencyPage() {
                 disabled={isRecording}
                 className="text-[11px] text-blue-400 hover:underline flex items-center space-x-1"
               >
-                <span>{isRecording ? "Transcribing Audio..." : "Simulate 911 Audio"}</span>
+                <span>{isRecording ? "Transcribing Audio..." : "Simulate 112 Audio"}</span>
               </button>
             </div>
             <textarea

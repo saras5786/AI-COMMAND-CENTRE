@@ -64,9 +64,9 @@ export function LocationPickerMap({
         zoomControl: true,
       });
 
-      // Use CartoDB Dark Matter or OpenStreetMap tiles
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      // OpenStreetMap Official Free & Open-Source Map Tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }).addTo(map);
 

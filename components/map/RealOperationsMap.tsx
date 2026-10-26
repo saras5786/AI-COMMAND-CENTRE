@@ -41,9 +41,9 @@ export function RealOperationsMap({
           zoomControl: true,
         });
 
-        // High quality OpenStreetMap / CartoDB Voyager tiles (clean, professional, readable)
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        // Official OpenStreetMap (100% Free & Open-Source)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
           maxZoom: 19,
         }).addTo(map);
 
@@ -251,6 +251,10 @@ export function RealOperationsMap({
           <span className="w-2 h-2 rounded-full bg-sky-400"></span>
           <span>Hospitals ({hospitals.length})</span>
         </button>
+
+        <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-medium ml-auto">
+          OpenStreetMap (Open Source)
+        </span>
       </div>
 
       {/* Map DOM Container */}

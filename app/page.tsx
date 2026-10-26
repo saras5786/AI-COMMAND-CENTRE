@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Radio, Play, Plus, ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Radio, Play, Plus, MapPin, Navigation } from "lucide-react";
 import Link from "next/link";
 import { useCommandCenterStore } from "@/lib/store";
 import { StatCards } from "@/components/dashboard/StatCards";
@@ -12,6 +12,7 @@ import { ERReadinessCard } from "@/components/dashboard/ERReadinessCard";
 import { CommandSheetModal } from "@/components/modals/CommandSheetModal";
 import { WorkflowSimModal } from "@/components/modals/WorkflowSimModal";
 import { DemoIncidentModal } from "@/components/modals/DemoIncidentModal";
+import { LocationPromptModal } from "@/components/modals/LocationPromptModal";
 import { soundFX } from "@/lib/sound";
 
 export default function DashboardPage() {
@@ -19,14 +20,32 @@ export default function DashboardPage() {
     incidents,
     units,
     hospitals,
+    sectorLocation,
     selectedIncident,
     setSelectedIncident,
     sendHospitalAlert,
     addIncident,
+    initializeGridAtLocation,
   } = useCommandCenterStore();
 
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+
+  // Automatically prompt for location on initial visit if not localized
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasPrompted = sessionStorage.getItem("cad_sector_prompted_v1");
+      if (!hasPrompted && !sectorLocation.isUserLocated) {
+        setIsLocationModalOpen(true);
+        sessionStorage.setItem("cad_sector_prompted_v1", "true");
+      }
+    }
+  }, [sectorLocation.isUserLocated]);
+
+  const handleLocationSelected = (lat: number, lng: number, city: string) => {
+    initializeGridAtLocation(lat, lng, city);
+  };
 
   return (
     <div className="space-y-5">
@@ -44,12 +63,23 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Automated computer-aided dispatch correlating emergency caller transcripts, scene images, GPS coordinates, and receiving trauma hospitals.
+              {sectorLocation.isUserLocated
+                ? `Active CAD sector localized to ${sectorLocation.city}. Simulating real-time incidents, response fleet, and trauma readiness.`
+                : "Automated computer-aided dispatch correlating emergency caller transcripts, scene images, GPS coordinates, and receiving trauma hospitals."}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Sector Locator Button */}
+          <button
+            onClick={() => setIsLocationModalOpen(true)}
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium transition"
+          >
+            <Navigation className="w-3.5 h-3.5 text-blue-400" />
+            <span>{sectorLocation.isUserLocated ? `📍 ${sectorLocation.city}` : "📍 Simulate In My Location"}</span>
+          </button>
+
           <Link
             href="/report"
             className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-sm transition"
@@ -57,6 +87,7 @@ export default function DashboardPage() {
             <Plus className="w-3.5 h-3.5" />
             <span>Report Incident</span>
           </Link>
+
           <button
             onClick={() => {
               soundFX.blip(650, 0.05);
@@ -86,7 +117,9 @@ export default function DashboardPage() {
         {/* Right Column: Live Map, Severity & Hospitals (5 cols) */}
         <div className="lg:col-span-5 space-y-5">
           {/* Live Real Map */}
-          <TacticalRadarMap />
+          <TacticalRadarMap
+            onOpenLocationPrompt={() => setIsLocationModalOpen(true)}
+          />
 
           {/* Incident Priority Breakdown */}
           <PriorityBreakdown incidents={incidents} />
@@ -118,6 +151,13 @@ export default function DashboardPage() {
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
         onInjectIncident={(inc) => addIncident(inc)}
+      />
+
+      {/* Location / Sector Intake Prompt Modal */}
+      <LocationPromptModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onLocationSelected={handleLocationSelected}
       />
     </div>
   );

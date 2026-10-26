@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Incident, ResponderUnit, Hospital } from "@/lib/initial-data";
-import { Filter, Layers, Navigation, AlertTriangle, Shield, Flame, Ambulance, Hospital as HospIcon } from "lucide-react";
+import { SectorLocation } from "@/lib/location-simulator";
+import { Filter, Layers, Navigation, AlertTriangle, Shield, Flame, Ambulance, Hospital as HospIcon, MapPin } from "lucide-react";
 
 interface RealOperationsMapProps {
   incidents: Incident[];
   units: ResponderUnit[];
   hospitals: Hospital[];
+  center?: [number, number];
+  userSector?: SectorLocation;
   onSelectIncident?: (incident: Incident) => void;
+  onOpenLocationPrompt?: () => void;
   heightClass?: string;
 }
 
@@ -16,7 +20,10 @@ export function RealOperationsMap({
   incidents,
   units,
   hospitals,
+  center,
+  userSector,
   onSelectIncident,
+  onOpenLocationPrompt,
   heightClass = "h-[620px]",
 }: RealOperationsMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +32,8 @@ export function RealOperationsMap({
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "INCIDENTS" | "POLICE" | "FIRE" | "EMS" | "HOSPITALS">("ALL");
   const [selectedItem, setSelectedItem] = useState<{ type: string; data: any } | null>(null);
+
+  const targetCenter: [number, number] = center || (userSector ? [userSector.lat, userSector.lng] : [37.78, -122.38]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !mapContainerRef.current) return;
@@ -36,8 +45,8 @@ export function RealOperationsMap({
 
       if (!mapInstanceRef.current) {
         const map = L.map(mapContainerRef.current, {
-          center: [37.78, -122.38],
-          zoom: 12,
+          center: targetCenter,
+          zoom: 13,
           zoomControl: true,
         });
 
@@ -55,7 +64,36 @@ export function RealOperationsMap({
       const layerGroup = layersGroupRef.current;
       if (!map || !layerGroup) return;
 
+      // Update center view when target coordinates change
+      map.setView(targetCenter, map.getZoom() || 13);
+
       layerGroup.clearLayers();
+
+      // 0. Plot User's Command Location if Located
+      if (userSector && userSector.isUserLocated) {
+        const userIcon = L.divIcon({
+          className: "leaflet-user-marker",
+          html: `
+            <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+              <div style="position: absolute; inset: 0; border-radius: 50%; background: #3b82f6; opacity: 0.35; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              <div style="width: 26px; height: 26px; border-radius: 50%; background: #2563eb; border: 2.5px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+            </div>
+          `,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+
+        const userMarker = L.marker([userSector.lat, userSector.lng], { icon: userIcon });
+        userMarker.bindPopup(`
+          <div style="font-family: inherit; font-size: 12px; min-width: 170px; color: #0f172a;">
+            <div style="font-weight: 700; color: #2563eb; margin-bottom: 2px;">Your Location (Command Post)</div>
+            <div style="font-size: 11px; color: #475569;">Sector: ${userSector.city}</div>
+          </div>
+        `);
+        layerGroup.addLayer(userMarker);
+      }
 
       // 1. Plot Incidents
       if (activeFilter === "ALL" || activeFilter === "INCIDENTS") {
@@ -187,74 +225,89 @@ export function RealOperationsMap({
     return () => {
       isMounted = false;
     };
-  }, [incidents, units, hospitals, activeFilter]);
+  }, [incidents, units, hospitals, activeFilter, targetCenter, userSector]);
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900 shadow-xl">
       {/* Top Filter Controls Bar */}
-      <div className="absolute top-3 left-3 z-[400] flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 shadow-lg text-xs">
-        <button
-          onClick={() => setActiveFilter("ALL")}
-          className={`px-3 py-1.5 rounded-lg font-medium transition ${
-            activeFilter === "ALL" ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800"
-          }`}
-        >
-          All Layers
-        </button>
+      <div className="absolute top-3 left-3 right-3 z-[400] flex flex-wrap items-center justify-between gap-2 p-1.5 rounded-xl bg-slate-900/95 backdrop-blur-md border border-slate-700/80 shadow-lg text-xs">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            onClick={() => setActiveFilter("ALL")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition ${
+              activeFilter === "ALL" ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            All Layers
+          </button>
 
-        <button
-          onClick={() => setActiveFilter("INCIDENTS")}
-          className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
-            activeFilter === "INCIDENTS" ? "bg-rose-600 text-white" : "text-slate-300 hover:bg-slate-800"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-rose-400"></span>
-          <span>Incidents ({incidents.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveFilter("INCIDENTS")}
+            className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
+              activeFilter === "INCIDENTS" ? "bg-rose-600 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+            <span>Incidents ({incidents.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveFilter("EMS")}
-          className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
-            activeFilter === "EMS" ? "bg-emerald-600 text-white" : "text-slate-300 hover:bg-slate-800"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span>Ambulances ({units.filter((u) => u.agency === "EMS").length})</span>
-        </button>
+          <button
+            onClick={() => setActiveFilter("EMS")}
+            className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
+              activeFilter === "EMS" ? "bg-emerald-600 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Ambulances ({units.filter((u) => u.agency === "EMS").length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveFilter("FIRE")}
-          className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
-            activeFilter === "FIRE" ? "bg-amber-600 text-white" : "text-slate-300 hover:bg-slate-800"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-          <span>Fire ({units.filter((u) => u.agency === "Fire & Rescue").length})</span>
-        </button>
+          <button
+            onClick={() => setActiveFilter("FIRE")}
+            className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
+              activeFilter === "FIRE" ? "bg-amber-600 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span>Fire ({units.filter((u) => u.agency === "Fire & Rescue").length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveFilter("POLICE")}
-          className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
-            activeFilter === "POLICE" ? "bg-blue-700 text-white" : "text-slate-300 hover:bg-slate-800"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-          <span>Police ({units.filter((u) => u.agency === "Police").length})</span>
-        </button>
+          <button
+            onClick={() => setActiveFilter("POLICE")}
+            className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
+              activeFilter === "POLICE" ? "bg-blue-700 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+            <span>Police ({units.filter((u) => u.agency === "Police").length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveFilter("HOSPITALS")}
-          className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
-            activeFilter === "HOSPITALS" ? "bg-sky-600 text-white" : "text-slate-300 hover:bg-slate-800"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-sky-400"></span>
-          <span>Hospitals ({hospitals.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveFilter("HOSPITALS")}
+            className={`px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition ${
+              activeFilter === "HOSPITALS" ? "bg-sky-600 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+            <span>Hospitals ({hospitals.length})</span>
+          </button>
+        </div>
 
-        <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-medium ml-auto">
-          OpenStreetMap (Open Source)
-        </span>
+        {/* Right Action: Locate / Sector Switcher */}
+        <div className="flex items-center space-x-2">
+          {onOpenLocationPrompt && (
+            <button
+              onClick={onOpenLocationPrompt}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-semibold transition"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>{userSector?.isUserLocated ? `📍 ${userSector.city}` : "📍 Simulate At My Location"}</span>
+            </button>
+          )}
+
+          <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-medium">
+            OpenStreetMap
+          </span>
+        </div>
       </div>
 
       {/* Map DOM Container */}

@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { Incident, ResponderUnit, Hospital, INITIAL_INCIDENTS, INITIAL_UNITS, INITIAL_HOSPITALS } from "./initial-data";
+import { SectorLocation, DEFAULT_SECTOR, generateLocalSectorData } from "./location-simulator";
 
-const STORAGE_KEY_INCIDENTS = "agy_emergency_incidents_v1";
-const STORAGE_KEY_UNITS = "agy_emergency_units_v1";
-const STORAGE_KEY_HOSPITALS = "agy_emergency_hospitals_v1";
+const STORAGE_KEY_INCIDENTS = "cad_emergency_incidents_v2";
+const STORAGE_KEY_UNITS = "cad_emergency_units_v2";
+const STORAGE_KEY_HOSPITALS = "cad_emergency_hospitals_v2";
+const STORAGE_KEY_SECTOR = "cad_emergency_sector_v2";
 
 export function useCommandCenterStore() {
   const [incidents, setIncidents] = useState<Incident[]>(INITIAL_INCIDENTS);
   const [units, setUnits] = useState<ResponderUnit[]>(INITIAL_UNITS);
   const [hospitals, setHospitals] = useState<Hospital[]>(INITIAL_HOSPITALS);
+  const [sectorLocation, setSectorLocation] = useState<SectorLocation>(DEFAULT_SECTOR);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
@@ -20,10 +23,12 @@ export function useCommandCenterStore() {
       const storedInc = localStorage.getItem(STORAGE_KEY_INCIDENTS);
       const storedUnits = localStorage.getItem(STORAGE_KEY_UNITS);
       const storedHosp = localStorage.getItem(STORAGE_KEY_HOSPITALS);
+      const storedSector = localStorage.getItem(STORAGE_KEY_SECTOR);
 
       if (storedInc) setIncidents(JSON.parse(storedInc));
       if (storedUnits) setUnits(JSON.parse(storedUnits));
       if (storedHosp) setHospitals(JSON.parse(storedHosp));
+      if (storedSector) setSectorLocation(JSON.parse(storedSector));
     } catch (e) {
       console.warn("Storage sync error:", e);
     } finally {
@@ -53,6 +58,37 @@ export function useCommandCenterStore() {
     } catch {}
   };
 
+  const saveSector = (updated: SectorLocation) => {
+    setSectorLocation(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY_SECTOR, JSON.stringify(updated));
+    } catch {}
+  };
+
+  // Initialize and simulate emergency grid around user's GPS coordinates
+  const initializeGridAtLocation = (lat: number, lng: number, cityName?: string) => {
+    const city = cityName || "Local Sector";
+    const newSector: SectorLocation = {
+      lat,
+      lng,
+      city,
+      isUserLocated: true,
+    };
+    saveSector(newSector);
+
+    const data = generateLocalSectorData(lat, lng, city);
+    saveIncidents(data.incidents);
+    saveUnits(data.units);
+    saveHospitals(data.hospitals);
+  };
+
+  const resetToDefaultSector = () => {
+    saveSector(DEFAULT_SECTOR);
+    saveIncidents(INITIAL_INCIDENTS);
+    saveUnits(INITIAL_UNITS);
+    saveHospitals(INITIAL_HOSPITALS);
+  };
+
   // Toggle unit status
   const toggleUnitStatus = (unitId: string) => {
     const updated = units.map((u) => {
@@ -73,21 +109,32 @@ export function useCommandCenterStore() {
   };
 
   // Notify Unit
-  const notifyUnit = (unitId: string, message: string) => {
-    console.log(`Alert sent to Unit ${unitId}: ${message}`);
-    // You could show a toast or dispatch a tactical chime
+  const notifyUnit = (unitId: string, customMessage?: string) => {
+    const updated = units.map((u) => {
+      if (u.id === unitId) {
+        return {
+          ...u,
+          status: "RESPONDING" as const,
+          eta: "4 min",
+          currentOrder: customMessage || `Priority Order Dispatched at ${new Date().toLocaleTimeString()}`,
+        };
+      }
+      return u;
+    });
+    saveUnits(updated);
   };
 
-  // Send Hospital Alert
+  // Hospital Pre-Alert
   const sendHospitalAlert = (hospitalId: string, customMessage?: string) => {
     const updated = hospitals.map((h) => {
-      if (h.id === hospitalId) {
+      if (h.id === hospitalId || h.code === hospitalId) {
+        const openBeds = Math.max(0, h.openBeds - 1);
         return {
           ...h,
           status: "ALERTED" as const,
-          lastAlertSent: customMessage || `Trauma Code Red • Incoming casualty ETA ${h.etaMin}m`,
-          openBeds: Math.max(0, h.openBeds - 1),
-          capacityUtilization: Math.min(100, Math.round(((h.totalBeds - (h.openBeds - 1)) / h.totalBeds) * 100)),
+          openBeds,
+          capacityUtilization: Math.min(100, Math.round(((h.totalBeds - openBeds) / h.totalBeds) * 100)),
+          lastAlertSent: customMessage || `Trauma Pre-Alert received at ${new Date().toLocaleTimeString()}`,
         };
       }
       return h;
@@ -95,49 +142,37 @@ export function useCommandCenterStore() {
     saveHospitals(updated);
   };
 
-  // Add new incident from AI triage
-  const addIncident = (newInc: Incident) => {
-    const updated = [newInc, ...incidents];
+  // Inject or Report new Incident
+  const addIncident = (newIncident: Incident) => {
+    const updated = [newIncident, ...incidents];
     saveIncidents(updated);
-
-    // Auto-update units assigned
-    if (newInc.assignedUnits && newInc.assignedUnits.length > 0) {
-      const updatedUnits = units.map((u) => {
-        if (newInc.assignedUnits.includes(u.callSign)) {
-          return {
-            ...u,
-            status: "RESPONDING" as const,
-            currentOrder: `${newInc.code} (${newInc.location.split("&")[0].trim()})`,
-            eta: "3 min",
-          };
-        }
-        return u;
-      });
-      saveUnits(updatedUnits);
-    }
   };
 
-  // Reset to initial demo state
-  const resetDemoData = () => {
-    localStorage.removeItem(STORAGE_KEY_INCIDENTS);
-    localStorage.removeItem(STORAGE_KEY_UNITS);
-    localStorage.removeItem(STORAGE_KEY_HOSPITALS);
-    setIncidents(INITIAL_INCIDENTS);
-    setUnits(INITIAL_UNITS);
-    setHospitals(INITIAL_HOSPITALS);
+  // Update Incident Status
+  const updateIncidentStatus = (incidentId: string, nextStatus: Incident["status"]) => {
+    const updated = incidents.map((inc) => {
+      if (inc.id === incidentId) {
+        return { ...inc, status: nextStatus };
+      }
+      return inc;
+    });
+    saveIncidents(updated);
   };
 
   return {
     incidents,
     units,
     hospitals,
+    sectorLocation,
     isLoaded,
     selectedIncident,
     setSelectedIncident,
+    initializeGridAtLocation,
+    resetToDefaultSector,
     toggleUnitStatus,
     notifyUnit,
     sendHospitalAlert,
     addIncident,
-    resetDemoData,
+    updateIncidentStatus,
   };
 }
